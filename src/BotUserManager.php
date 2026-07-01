@@ -61,6 +61,14 @@ class BotUserManager
         'reply',
         'discussion.startWithoutApproval',
         'discussion.replyWithoutApproval',
+        // fof/anti-spam (optional): its content filter only scrutinises "fresh" users
+        // (few posts or a young account) and holds posts containing non-allowlisted
+        // URLs for approval — which bots trip constantly (brand-new accounts that paste
+        // source-article links). Anti-spam exempts anyone who can('discussion.hide'), so
+        // granting that makes bots staff-exempt from its checks. It does NOT expose any
+        // moderation UI to the bots (they never use the web UI); it's purely the bypass.
+        // Harmless if fof/anti-spam isn't installed.
+        'discussion.hide',
         // fof/terms (optional): lets bots postpone/bypass policy acceptance so the
         // terms group processor doesn't reduce them to guests. Harmless no-op row
         // if fof/terms isn't installed.
