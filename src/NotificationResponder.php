@@ -120,7 +120,7 @@ class NotificationResponder
      */
     protected function handle(Notification $notification, array $tagIds, array $botIds, array &$claimed, int &$enqueued): bool
     {
-        if (!in_array($notification->type, self::REPLYABLE_TYPES, true)) {
+        if (! in_array($notification->type, self::REPLYABLE_TYPES, true)) {
             // e.g. postLiked — nothing to respond to; mark read so it doesn't linger.
             return true;
         }
@@ -130,14 +130,14 @@ class NotificationResponder
         $post = $this->mentioningPost($notification);
 
         // Subject gone, not a comment, or hidden — nothing to answer.
-        if (!$post || $post->discussion === null || $post->hidden_at !== null) {
+        if (! $post || $post->discussion === null || $post->hidden_at !== null) {
             return true;
         }
 
         $discussion = $post->discussion;
 
         // Only act within the configured tags and on public discussions.
-        if ($discussion->is_private || !$this->discussionInTags($discussion->id, $tagIds)) {
+        if ($discussion->is_private || ! $this->discussionInTags($discussion->id, $tagIds)) {
             return true;
         }
 
@@ -215,7 +215,7 @@ class NotificationResponder
         // postMentioned: locate the reply.
         $subject = Post::query()->find($notification->subject_id);
 
-        if (!$subject) {
+        if (! $subject) {
             return null;
         }
 

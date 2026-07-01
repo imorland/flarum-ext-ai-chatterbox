@@ -37,7 +37,6 @@ class GenerateReplyJob extends AbstractJob
      */
     protected const CANDIDATE_POOL = 20;
 
-
     /**
      * Length (seconds) of the rolling window the autonomous per-discussion cap is
      * measured over. Matches the ~1-minute scheduler tick cadence.
@@ -87,7 +86,7 @@ class GenerateReplyJob extends AbstractJob
         Cache $cache,
         FeedReader $feeds
     ): void {
-        if (!$settings->isOperable()) {
+        if (! $settings->isOperable()) {
             return;
         }
 
@@ -129,11 +128,11 @@ class GenerateReplyJob extends AbstractJob
             }
         }
 
-        if (!$actor) {
+        if (! $actor) {
             return;
         }
 
-        if (!$discussion) {
+        if (! $discussion) {
             return;
         }
 
@@ -143,7 +142,7 @@ class GenerateReplyJob extends AbstractJob
         // after release so the lock never spans a slow OpenAI call.
         $lock = $cache->lock('ianm-ai-chatterbox.reply.'.$discussion->id, 60);
 
-        if (!$lock->get()) {
+        if (! $lock->get()) {
             return;
         }
 
@@ -161,7 +160,7 @@ class GenerateReplyJob extends AbstractJob
             // don't swarm a single thread — the admin-tunable limit sets how lively a
             // single thread can get. Mention-driven (directed) replies bypass the cap:
             // a pinged bot always answers.
-            if (!$directed && !$this->claimAutonomousSlot($cache, (int) $discussion->id, $settings->maxRepliesPerThread())) {
+            if (! $directed && ! $this->claimAutonomousSlot($cache, (int) $discussion->id, $settings->maxRepliesPerThread())) {
                 return;
             }
 
@@ -250,9 +249,9 @@ class GenerateReplyJob extends AbstractJob
         // answered; unanswered threads already matched to a best-fit persona — every
         // unanswered thread should get its first reply; and entirely when the
         // BUSY_THREAD_GATE switch is off (unleashed mode for livelier conversation).
-        $gateApplies = $mentionPost === null && !$isUnanswered && $settings->busyThreadGate();
+        $gateApplies = $mentionPost === null && ! $isUnanswered && $settings->busyThreadGate();
 
-        if ($gateApplies && !$client->shouldReply($discussion->title, $context, $persona)) {
+        if ($gateApplies && ! $client->shouldReply($discussion->title, $context, $persona)) {
             return;
         }
 
@@ -265,7 +264,7 @@ class GenerateReplyJob extends AbstractJob
         // the gate decision: unanswered threads (always committed) and, when the busy
         // gate is off, busy threads too — otherwise generation could still self-skip
         // and we'd lose the liveliness the unleashed mode is meant to produce.
-        $mustReply = $mentionPost === null && ($isUnanswered || !$settings->busyThreadGate());
+        $mustReply = $mentionPost === null && ($isUnanswered || ! $settings->busyThreadGate());
 
         $body = $client->generateReply($discussion->title, $context, $participantNames, $addressedBy, $headlines, $persona, $mustReply);
 
@@ -308,7 +307,7 @@ class GenerateReplyJob extends AbstractJob
     {
         $bot = $bots->query()->find($this->targetBotId);
 
-        if (!$bot) {
+        if (! $bot) {
             return [null, null, null];
         }
 
@@ -316,7 +315,7 @@ class GenerateReplyJob extends AbstractJob
             ->whereVisibleTo($bot)
             ->find($this->targetDiscussionId);
 
-        if (!$discussion) {
+        if (! $discussion) {
             return [null, null, null];
         }
 
@@ -549,7 +548,7 @@ class GenerateReplyJob extends AbstractJob
             // The most recent poster must be a bot other than this actor (so there's a
             // bot remark to respond to, and we're not replying to ourselves).
             $lastPoster = (int) $d->last_posted_user_id;
-            if (!in_array($lastPoster, $botIds, true) || $lastPoster === (int) $actor->id) {
+            if (! in_array($lastPoster, $botIds, true) || $lastPoster === (int) $actor->id) {
                 return false;
             }
 

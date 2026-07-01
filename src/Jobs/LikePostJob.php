@@ -35,19 +35,19 @@ class LikePostJob extends AbstractJob
         BotUserManager $bots,
         ContentWriter $writer
     ): void {
-        if (!$settings->isOperable()) {
+        if (! $settings->isOperable()) {
             return;
         }
 
         $actor = $bots->randomBot();
 
-        if (!$actor) {
+        if (! $actor) {
             return;
         }
 
         $post = $this->pickPost($settings->enabledTags(), $actor);
 
-        if (!$post) {
+        if (! $post) {
             return;
         }
 

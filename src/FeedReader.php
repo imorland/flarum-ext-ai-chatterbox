@@ -105,7 +105,7 @@ class FeedReader
 
         $take = function (array $item) use (&$picked, &$seen): void {
             $key = $item['title'];
-            if (!isset($seen[$key])) {
+            if (! isset($seen[$key])) {
                 $seen[$key] = true;
                 $picked[] = $item;
             }
@@ -168,8 +168,8 @@ class FeedReader
 
         $words = array_filter($words, function (string $w) use ($stop) {
             return mb_strlen($w) >= 4
-                && !in_array($w, $stop, true)
-                && !ctype_digit($w); // drop pure numbers like years
+                && ! in_array($w, $stop, true)
+                && ! ctype_digit($w); // drop pure numbers like years
         });
 
         return array_values(array_unique($words));
@@ -282,7 +282,7 @@ class FeedReader
      */
     protected function atomLink(\SimpleXMLElement $entry): string
     {
-        if (!isset($entry->link)) {
+        if (! isset($entry->link)) {
             return '';
         }
 
@@ -304,7 +304,7 @@ class FeedReader
         $summary = trim(html_entity_decode(strip_tags($summary), ENT_QUOTES | ENT_HTML5));
         $link = trim($link);
 
-        if ($link !== '' && !filter_var($link, FILTER_VALIDATE_URL)) {
+        if ($link !== '' && ! filter_var($link, FILTER_VALIDATE_URL)) {
             $link = '';
         }
 

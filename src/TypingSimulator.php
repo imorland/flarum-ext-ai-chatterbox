@@ -15,9 +15,9 @@ use Flarum\Extension\ExtensionManager;
 use Flarum\Foundation\Config;
 use Flarum\Realtime\Websocket\Settings as RealtimeSettings;
 use Flarum\User\User;
-use Illuminate\Contracts\Container\Container;
 use GuzzleHttp\Psr7\Message as Psr7Message;
 use GuzzleHttp\Psr7\Uri;
+use Illuminate\Contracts\Container\Container;
 use Ratchet\RFC6455\Handshake\ClientNegotiator;
 use Ratchet\RFC6455\Messaging\CloseFrameChecker;
 use Ratchet\RFC6455\Messaging\Frame;
@@ -123,7 +123,7 @@ class TypingSimulator
 
         $rt = $this->realtimeSettings();
 
-        if (!$this->settings->simulateTyping() || $rt === null) {
+        if (! $this->settings->simulateTyping() || $rt === null) {
             sleep($seconds);
 
             return;
@@ -169,7 +169,7 @@ class TypingSimulator
 
         $done = false;
         $finish = function () use (&$done, $loop) {
-            if (!$done) {
+            if (! $done) {
                 $done = true;
                 $loop->stop();
             }
@@ -179,7 +179,15 @@ class TypingSimulator
         $loop->addTimer($seconds + self::CONNECT_TIMEOUT, $finish);
 
         $connector->connect($target)->then(function (ConnectionInterface $conn) use (
-            $loop, $request, $negotiator, $channel, $event, $data, $seconds, $rt, $finish
+            $loop,
+            $request,
+            $negotiator,
+            $channel,
+            $event,
+            $data,
+            $seconds,
+            $rt,
+            $finish
         ) {
             $handshakeComplete = false;
             $buffer = '';
@@ -194,7 +202,7 @@ class TypingSimulator
                     if ($name === 'pusher:connection_established') {
                         $socketId = json_decode($payload->data ?? '{}')->socket_id ?? null;
 
-                        if (!$socketId) {
+                        if (! $socketId) {
                             return;
                         }
 
@@ -250,7 +258,7 @@ class TypingSimulator
 
                 $response = Psr7Message::parseResponse(substr($buffer, 0, $headerEnd + 4));
 
-                if (!$negotiator->validateResponse($request, $response)) {
+                if (! $negotiator->validateResponse($request, $response)) {
                     $finish();
                     $conn->close();
 
@@ -301,13 +309,13 @@ class TypingSimulator
      */
     protected function realtimeSettings(): ?RealtimeSettings
     {
-        if (!class_exists(RealtimeSettings::class)) {
+        if (! class_exists(RealtimeSettings::class)) {
             return null;
         }
 
         $extensions = $this->container->make(ExtensionManager::class);
 
-        if (!$extensions->isEnabled('flarum-realtime')) {
+        if (! $extensions->isEnabled('flarum-realtime')) {
             return null;
         }
 

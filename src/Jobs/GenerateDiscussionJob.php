@@ -68,13 +68,13 @@ class GenerateDiscussionJob extends AbstractJob
         FeedReader $feeds,
         Cache $cache
     ): void {
-        if (!$settings->isOperable()) {
+        if (! $settings->isOperable()) {
             return;
         }
 
         $actor = $bots->randomBot();
 
-        if (!$actor) {
+        if (! $actor) {
             return;
         }
 
@@ -109,7 +109,7 @@ class GenerateDiscussionJob extends AbstractJob
             // is each tag's own metadata, so it works with any forum's tags.
             $candidates = $feeds->shortlistItems($this->tagText($primary));
 
-            if (!empty($candidates)) {
+            if (! empty($candidates)) {
                 $routed = $client->classifyItemToTag($candidates, $this->tagDescriptors($primary), $recentForRouting);
 
                 if ($routed !== null) {
@@ -468,7 +468,7 @@ class GenerateDiscussionJob extends AbstractJob
 
         $words = preg_split('/[^a-z0-9]+/i', mb_strtolower($text)) ?: [];
 
-        $words = array_filter($words, fn (string $w) => mb_strlen($w) >= 3 && !in_array($w, $stop, true));
+        $words = array_filter($words, fn (string $w) => mb_strlen($w) >= 3 && ! in_array($w, $stop, true));
 
         return array_values(array_unique($words));
     }

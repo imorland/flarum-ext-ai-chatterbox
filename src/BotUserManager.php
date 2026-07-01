@@ -112,7 +112,6 @@ class BotUserManager
         // whole cast is personalised rather than a mix of named members and AI_User_N.
         $this->backfillPersonas();
 
-
         // Self-heal coverage: if a tag was enabled after the cast was built, no bot
         // will be interested in it, so its threads go unanswered. Re-persona a few
         // bots each tick to fill any gap, so new tags get covered within a few ticks.
@@ -141,7 +140,7 @@ class BotUserManager
         // Non-blocking: if another pass holds the lock, skip — it's already creating.
         $lock = $this->cache->lock('ianm-ai-chatterbox.create-bots', 600);
 
-        if (!$lock->get()) {
+        if (! $lock->get()) {
             return;
         }
 
@@ -187,7 +186,7 @@ class BotUserManager
                 $persona = $this->personaFor($bot);
                 $interestWords = $this->keywords(($persona['interests'] ?? '').' '.($persona['bio'] ?? ''));
 
-                if (!empty(array_intersect($tagWords, $interestWords))) {
+                if (! empty(array_intersect($tagWords, $interestWords))) {
                     $coverers[(int) $tag->id][] = (int) $bot->id;
                 }
             }
@@ -220,7 +219,7 @@ class BotUserManager
             $candidates = $bots->filter(function (User $b) use ($coverers, $tag, $soleCoverers) {
                 $id = (int) $b->id;
 
-                return !in_array($id, $coverers[(int) $tag->id], true) && !isset($soleCoverers[$id]);
+                return ! in_array($id, $coverers[(int) $tag->id], true) && ! isset($soleCoverers[$id]);
             })->shuffle();
 
             foreach ($candidates as $bot) {
@@ -257,7 +256,7 @@ class BotUserManager
         $words = preg_split('/[^a-z0-9]+/i', mb_strtolower($text)) ?: [];
 
         $words = array_filter($words, function (string $w) use ($stop) {
-            return mb_strlen($w) >= 4 && !in_array($w, $stop, true) && !ctype_digit($w);
+            return mb_strlen($w) >= 4 && ! in_array($w, $stop, true) && ! ctype_digit($w);
         });
 
         return array_values(array_unique($words));
@@ -336,7 +335,7 @@ class BotUserManager
         foreach ($tags as $tag) {
             // Walk up the parent chain; a restricted ancestor also needs granting.
             for ($current = $tag; $current !== null; $current = $current->parent) {
-                if (!$current->is_restricted) {
+                if (! $current->is_restricted) {
                     continue;
                 }
 
@@ -477,7 +476,7 @@ class BotUserManager
     {
         $raw = $user->getAttribute('ai_persona');
 
-        if (!is_string($raw) || $raw === '') {
+        if (! is_string($raw) || $raw === '') {
             return null;
         }
 
@@ -500,7 +499,7 @@ class BotUserManager
      */
     protected function applyPersona(User $user, array $persona): bool
     {
-        if (!$this->personaIsUsable($persona)) {
+        if (! $this->personaIsUsable($persona)) {
             return false;
         }
 
@@ -514,7 +513,7 @@ class BotUserManager
         }
 
         // Bio (fof/user-bio) — set only when the column is present.
-        if (!empty($persona['bio']) && $this->usersHasColumn('bio')) {
+        if (! empty($persona['bio']) && $this->usersHasColumn('bio')) {
             $user->setAttribute('bio', $persona['bio']);
         }
 

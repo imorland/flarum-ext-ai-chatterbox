@@ -35,7 +35,7 @@ class CoverageKeywordsTest extends TestCase
 
     protected function overlaps(string $a, string $b): bool
     {
-        return !empty(array_intersect($this->keywords($a), $this->keywords($b)));
+        return ! empty(array_intersect($this->keywords($a), $this->keywords($b)));
     }
 
     public function test_drops_short_generic_and_numeric_tokens(): void

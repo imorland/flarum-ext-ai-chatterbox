@@ -39,19 +39,19 @@ class OpenAIClient
      * else…", "In today's fast-paced world…") that makes every bot sound identical.
      * This pushes for genuine variety and the author's own voice instead.
      */
-    protected const STYLE_GUIDANCE = "Write like a real, specific person — not like an "
-        ."assistant or a press release. Sound like yourself, in your own voice, however that "
+    protected const STYLE_GUIDANCE = 'Write like a real, specific person — not like an '
+        .'assistant or a press release. Sound like yourself, in your own voice, however that '
         ."is.\n\n"
-        ."Avoid the tired openers and filler that make forum posts sound generated. Do NOT "
-        ."begin with any of: \"I stumbled across\", \"I just read\", \"I came across\", \"I "
+        .'Avoid the tired openers and filler that make forum posts sound generated. Do NOT '
+        .'begin with any of: "I stumbled across", "I just read", "I came across", "I '
         ."recently saw\", \"Has anyone else\", \"So I was thinking\", \"In today's world\", "
         ."\"In this day and age\", \"Let's dive in\", \"As we all know\". Don't open by naming "
-        ."the topic and announcing you find it interesting. Just start somewhere real — a "
-        ."reaction, a detail, an opinion, a half-finished thought — the way a person actually "
+        .'the topic and announcing you find it interesting. Just start somewhere real — a '
+        .'reaction, a detail, an opinion, a half-finished thought — the way a person actually '
         ."would.\n\n"
         ."Vary your sentence length and rhythm. It's fine to be a bit informal, blunt, funny, "
         ."uncertain, or to ramble slightly — real people aren't polished. Don't end every post "
-        ."with a tidy question inviting others to share unless it genuinely fits.";
+        .'with a tidy question inviting others to share unless it genuinely fits.';
 
     public function __construct(protected Settings $settings)
     {
@@ -101,16 +101,16 @@ class OpenAIClient
             // rounded individual (not defined solely by it).
             $context .= "This member should be someone genuinely interested in: {$coverTopic}. "
                 ."Make that a real, central part of who they are (so they'd happily discuss it), "
-                ."but still give them a couple of other unrelated interests and their own distinct "
+                .'but still give them a couple of other unrelated interests and their own distinct '
                 ."personality.\n\n";
         }
 
-        if (!empty($tagSummaries)) {
+        if (! empty($tagSummaries)) {
             $context .= "For wider context, the forum's sections are:\n- "
                 .implode("\n- ", $tagSummaries)."\n\n";
         }
-        if (!empty($existingPersonas)) {
-            $context .= "The cast so far (make this new member clearly DIFFERENT from these — "
+        if (! empty($existingPersonas)) {
+            $context .= 'The cast so far (make this new member clearly DIFFERENT from these — '
                 ."different interests, tone and background, and a distinct name):\n- "
                 .implode("\n- ", $existingPersonas)."\n\n";
         }
@@ -191,7 +191,7 @@ class OpenAIClient
 
         $user = "Tags:\n".implode("\n", $tagLines)."\n\nNews items:\n".implode("\n", $itemLines);
 
-        if (!empty($recentTitles)) {
+        if (! empty($recentTitles)) {
             $user .= "\n\nRecent discussions (avoid re-covering these subjects, and lean toward "
                 ."sections they don't already represent):\n- ".implode("\n- ", $recentTitles);
         }
@@ -202,7 +202,7 @@ class OpenAIClient
 
         // isset() is false for null values too, so a "nothing fits" response of
         // {"tagId": null, "itemIndex": null} short-circuits here to a null result.
-        if (!is_array($decoded) || !isset($decoded['tagId'], $decoded['itemIndex'])) {
+        if (! is_array($decoded) || ! isset($decoded['tagId'], $decoded['itemIndex'])) {
             return null;
         }
 
@@ -212,7 +212,7 @@ class OpenAIClient
         // Validate against what we actually sent — guard hallucinated ids/indexes.
         $validTagIds = array_map(fn (array $t) => $t['id'], $tags);
 
-        if (!in_array($tagId, $validTagIds, true) || !isset($items[$itemIndex])) {
+        if (! in_array($tagId, $validTagIds, true) || ! isset($items[$itemIndex])) {
             return null;
         }
 
@@ -235,19 +235,19 @@ class OpenAIClient
 
         $parts = [];
 
-        if (!empty($persona['display_name'])) {
+        if (! empty($persona['display_name'])) {
             $parts[] = "You are posting as \"{$persona['display_name']}\", a regular member of this forum.";
         }
-        if (!empty($persona['bio'])) {
+        if (! empty($persona['bio'])) {
             $parts[] = "About you: {$persona['bio']}";
         }
-        if (!empty($persona['interests'])) {
+        if (! empty($persona['interests'])) {
             $parts[] = "You're especially into: {$persona['interests']}.";
         }
-        if (!empty($persona['tone'])) {
+        if (! empty($persona['tone'])) {
             $parts[] = "Your writing tone: {$persona['tone']}.";
         }
-        if (!empty($persona['quirks'])) {
+        if (! empty($persona['quirks'])) {
             $parts[] = "Voice quirks to keep consistent: {$persona['quirks']}.";
         }
 
@@ -375,15 +375,15 @@ class OpenAIClient
             $section .= " (this section is about: {$tagDescription})";
         }
 
-        if (!empty($avoidTitles)) {
+        if (! empty($avoidTitles)) {
             $system .= "\n\nRecent threads already exist on these titles — pick a clearly different "
                 ."subject and angle, do not rehash them:\n- ".implode("\n- ", $avoidTitles);
         }
 
         if ($newsItem !== null) {
             $summary = $newsItem['summary'] !== '' ? "\n\nSummary: {$newsItem['summary']}" : '';
-            $link = !empty($newsItem['link']) ? "\n\nSource URL: {$newsItem['link']}" : '';
-            $linkGuidance = !empty($newsItem['link'])
+            $link = ! empty($newsItem['link']) ? "\n\nSource URL: {$newsItem['link']}" : '';
+            $linkGuidance = ! empty($newsItem['link'])
                 ? ' Link to the source article once where it reads naturally (paste the URL on its '
                     .'own or inline — the forum turns it into a link); do not invent a different URL.'
                 : '';
@@ -396,11 +396,11 @@ class OpenAIClient
                 .'quote the article at length.'.$linkGuidance."\n\nApproach for this post: ".$this->varietyDirective('discussion');
         } else {
             $user = "Start a new thread in the {$section} section of the forum — nothing to do with "
-                ."the news, just something you actually feel like posting. "
+                .'the news, just something you actually feel like posting. '
                 ."{$this->spontaneousKind()} "
-                ."Pick something specific that fits this section and that someone with your interests "
+                .'Pick something specific that fits this section and that someone with your interests '
                 ."and personality would genuinely raise, and write it in your own voice.\n\n"
-                ."Approach for this post: ".$this->varietyDirective('discussion');
+                .'Approach for this post: '.$this->varietyDirective('discussion');
         }
 
         $content = $this->complete($system, $user);
@@ -461,7 +461,7 @@ class OpenAIClient
 
         $decoded = json_decode($this->extractJson($this->complete($system, $user)), true);
 
-        if (!is_array($decoded) || !isset($decoded['memberIds']) || !is_array($decoded['memberIds'])) {
+        if (! is_array($decoded) || ! isset($decoded['memberIds']) || ! is_array($decoded['memberIds'])) {
             return [];
         }
 
@@ -469,7 +469,7 @@ class OpenAIClient
         $out = [];
         foreach ($decoded['memberIds'] as $id) {
             $id = (int) $id;
-            if (array_key_exists($id, $personas) && !in_array($id, $out, true)) {
+            if (array_key_exists($id, $personas) && ! in_array($id, $out, true)) {
                 $out[] = $id;
             }
         }
@@ -561,21 +561,21 @@ class OpenAIClient
     ): string {
         $mentionGuidance = '';
 
-        if (!empty($participants)) {
+        if (! empty($participants)) {
             $mentionGuidance = "\n\nDo NOT @-mention other people. Just reply to the conversation "
-                ."normally — refer to others by name in plain text if you must (e.g. \"I agree with "
-                ."Sam\"), but do not write an @-mention. The ONLY exception: if you are directly "
-                ."answering a specific question someone asked YOU, you may begin by @-mentioning that "
-                ."one person — and no one else. Almost every reply should contain no @-mentions at all.";
+                .'normally — refer to others by name in plain text if you must (e.g. "I agree with '
+                .'Sam"), but do not write an @-mention. The ONLY exception: if you are directly '
+                .'answering a specific question someone asked YOU, you may begin by @-mentioning that '
+                .'one person — and no one else. Almost every reply should contain no @-mentions at all.';
         }
 
         // Give the bot current-events awareness as background knowledge. It should
         // only surface a headline if it is genuinely relevant to the thread — never
         // shoehorn news in or change the subject.
         $newsAwareness = '';
-        if (!empty($headlines)) {
+        if (! empty($headlines)) {
             $newsAwareness = "\n\nFor background awareness, here are some current news headlines (some "
-                ."may be in other languages — always write your reply in English). Only reference one if "
+                .'may be in other languages — always write your reply in English). Only reference one if '
                 ."it is directly relevant to what's being discussed; otherwise ignore them entirely and "
                 ."do not change the subject:\n- ".implode("\n- ", $headlines);
         }
@@ -587,16 +587,16 @@ class OpenAIClient
         // person who pinged it), or when answering an unanswered thread we've committed
         // to ($mustReply) — both must produce a reply.
         $optOut = '';
-        if (!$directlyAddressed && !$mustReply) {
+        if (! $directlyAddressed && ! $mustReply) {
             $optOut = "\n\nIMPORTANT — you do not have to reply. Most forum threads, most members "
-                ."scroll past. Reply ONLY if you, as this specific person, genuinely have something "
-                ."worth adding: a real point or counter-point, a useful answer, a relevant experience, "
-                ."a question that moves it forward, or humour that actually lands. Do NOT reply just "
-                ."to agree, to say \"me too\" / \"sounds good\" / \"looking forward to it\", to "
+                .'scroll past. Reply ONLY if you, as this specific person, genuinely have something '
+                .'worth adding: a real point or counter-point, a useful answer, a relevant experience, '
+                .'a question that moves it forward, or humour that actually lands. Do NOT reply just '
+                .'to agree, to say "me too" / "sounds good" / "looking forward to it", to '
                 ."restate what's been said, or to be polite. If the conversation is basically settled, "
                 ."or the topic isn't something this person would care about, or you'd only be adding "
-                ."filler — respond with exactly [SKIP] and nothing else. Skipping is the right, common "
-                ."choice; lean toward it when in doubt.";
+                .'filler — respond with exactly [SKIP] and nothing else. Skipping is the right, common '
+                .'choice; lean toward it when in doubt.';
         }
 
         $system = $this->settings->prompt()
@@ -615,7 +615,7 @@ class OpenAIClient
 
         if ($directlyAddressed) {
             $task = "{$addressedBy} addressed you directly in the most recent post. Read what "
-                ."they said and respond to them specifically — answer their question or engage "
+                .'they said and respond to them specifically — answer their question or engage '
                 ."with their point directly, don't give a generic reply.";
         }
 

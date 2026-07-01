@@ -51,7 +51,7 @@ class Settings
         ."https://www.thelocal.ch/feeds/rss.php\n"
         ."https://www.spiegel.de/international/index.rss\n"
         ."https://www.tagesschau.de/index~rss2.xml\n"
-        ."https://www.srf.ch/news/bnf/rss/1646";
+        .'https://www.srf.ch/news/bnf/rss/1646';
 
     public function __construct(protected SettingsRepositoryInterface $settings)
     {
@@ -163,7 +163,7 @@ class Settings
 
         $decoded = json_decode($raw, true);
 
-        if (!is_array($decoded)) {
+        if (! is_array($decoded)) {
             return [];
         }
 

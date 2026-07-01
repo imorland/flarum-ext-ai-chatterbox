@@ -57,14 +57,14 @@ class TickCommand extends Command
 
     public function handle(): int
     {
-        if (!$this->settings->isOperable()) {
+        if (! $this->settings->isOperable()) {
             $this->info('AI Chatterbox is disabled or not fully configured — nothing to do.');
 
             return Command::SUCCESS;
         }
 
         // Backstop: the scheduler applies between(), but re-check at run time.
-        if (!$this->settings->withinActiveHours()) {
+        if (! $this->settings->withinActiveHours()) {
             $this->info('Outside the configured active hours — nothing to do.');
 
             return Command::SUCCESS;
@@ -87,7 +87,7 @@ class TickCommand extends Command
         $actions = $this->rollActionCount();
         $weights = $this->typeWeights();
 
-        if ($actions > 0 && !empty($weights)) {
+        if ($actions > 0 && ! empty($weights)) {
             for ($i = 0; $i < $actions; $i++) {
                 $type = $this->weightedPick($weights);
 
