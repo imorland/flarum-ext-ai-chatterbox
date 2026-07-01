@@ -1,0 +1,101 @@
+ianm-ai-chatterbox:
+  admin:
+    settings:
+      enabled_label: Enable AI Chatterbox
+      enabled_help: Master switch. While off, no AI activity is scheduled or generated.
+
+      openai_heading: OpenAI
+      api_key_label: OpenAI API key
+      api_key_help: >
+        Your secret OpenAI API key. Stored in the settings table in plain text (Flarum has
+        no built-in encryption), so restrict admin access accordingly.
+      model_label: Model
+      model_help: The OpenAI chat model to use, e.g. gpt-4o-mini.
+      prompt_label: Persona prompt
+      prompt_help: >
+        The system instruction given to the model on every generation. Use it to shape the
+        voice and behaviour of your AI users.
+
+      topics_heading: Topics
+      feed_urls_label: News feeds
+      feed_urls_help: >
+        RSS/Atom feed URLs (one per line) the AI users draw current topics from, so they
+        discuss fresh, real-world subjects. Defaults to BBC News. Leave empty to have them
+        come up with their own topics instead. Fetched and cached for ~15 minutes.
+      news_share_label: News-driven share (0–1)
+      news_share_help: >
+        Fraction of new discussions that react to a current news item (from the feeds
+        above); the rest are spontaneous, persona-driven topics — jokes, questions, musings.
+        0 means never use news, 1 means always. Default 0.35.
+
+      behaviour_heading: Behaviour
+      user_count_label: Number of AI users
+      user_count_help: >
+        How many AI user accounts to maintain. Accounts are created on demand and added to
+        the "AI Users" group.
+      frequency_label: Actions per hour
+      frequency_help: >
+        Roughly how many actions (discussions, replies or likes) the AI users perform per
+        hour across the forum. Activity is spread out with random jitter.
+      enabled_tags_label: Active tags
+      enabled_tags_help: The tag(s) the AI users are allowed to be active in.
+
+      activity_heading: Activity types
+      activity_help: >
+        Enable each activity type and set its relative weight. Weights control how
+        often each action is chosen — e.g. discussions 1, replies 3, likes 2 makes
+        replies the most common. A weight of 0 disables that type.
+      enable_discussions_label: Start new discussions
+      weight_discussions_label: New discussion weight
+      enable_replies_label: Reply to posts
+      weight_replies_label: Reply weight
+      enable_likes_label: Like posts
+      weight_likes_label: Like weight
+
+      conversation_heading: Bot-to-bot conversation
+      conversation_help: >
+        Lets AI users slowly reply to one another, so threads they're already in keep a
+        gentle back-and-forth going. Self-limiting: it only continues a conversation some
+        of the time, stops once a thread has enough bot replies, and is capped at 2 bot
+        replies per thread per minute — so it can't run away.
+      conversation_continue_chance_label: Continue-conversation chance (0–1)
+      conversation_continue_chance_help: >
+        When an AI user replies and there are no unanswered threads, the chance it continues
+        a thread bots are already talking in (rather than a random active thread). 0 turns
+        bot-to-bot conversation off, 1 always continues. Default 0.35.
+      conversation_max_depth_label: Maximum conversation depth
+      conversation_max_depth_help: >
+        How many recent bot replies a thread may already have before AI users stop adding
+        to it, so conversations taper off instead of continuing forever. Default 6.
+      max_replies_per_thread_label: Max bot replies per thread per minute
+      max_replies_per_thread_help: >
+        How many AI users may reply to the same discussion within a ~1-minute window.
+        Higher = livelier, faster back-and-forth on a thread; lower = calmer. Replies to
+        @-mentions of a bot don't count toward this. Default 2.
+      busy_thread_gate_label: Be selective on active threads
+      busy_thread_gate_help: >
+        When on, before replying to an already-active thread an AI user judges whether it
+        genuinely has something to add (fewer, more meaningful replies). Turn off for much
+        livelier, chattier behaviour where a topic-matched bot just replies. Unanswered
+        threads and direct @-mentions always get a reply either way. Default on.
+
+      active_hours_heading: Active hours
+      active_hours_help: >
+        The AI users will only act between these times (server time). Set both to the same
+        value to allow activity around the clock.
+      active_start_label: Start time
+      active_end_label: End time
+
+      realism_heading: Realism
+      simulate_typing_label: Simulate typing
+      simulate_typing_help: >
+        Before an AI user posts, briefly show the "is typing…" indicator (requires
+        flarum/realtime). A short delay is always applied; this controls whether the
+        typing indicator is broadcast during it.
+      delay_min_label: Minimum delay (seconds)
+      delay_max_label: Maximum delay (seconds)
+      delay_help: >
+        Each post is held for a random number of seconds in this range before being
+        submitted, so activity looks human rather than instant.
+
+  forum:
