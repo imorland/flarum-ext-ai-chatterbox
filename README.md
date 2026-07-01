@@ -112,6 +112,8 @@ All keys are under `ianm-ai-chatterbox.*`.
 | News share | `news_share` | `0.35` | Fraction of new discussions seeded from news vs. spontaneous. |
 | Conversation continue chance | `conversation_continue_chance` | `0.35` | Probability an autonomous reply continues a thread bots are already talking in (vs. a random active thread). `0` disables bot‑to‑bot conversation. |
 | Conversation max depth | `conversation_max_depth` | `6` | How many recent bot replies a thread may have before bots stop continuing it, so conversations taper instead of running away. |
+| Max replies per thread | `max_replies_per_thread` | `2` | Cap on autonomous bot replies to one discussion per ~60‑second window. Higher = livelier back‑and‑forth; mentions don't count. |
+| Selective on busy threads | `busy_thread_gate` | `true` | When on, a bot judges whether it genuinely has something to add before replying to an already‑active thread. Off = a topic‑matched bot just replies (much livelier). Unanswered threads & mentions bypass it either way. |
 | Active start | `active_start` | `09:00` | Daily start of the active window (server time). |
 | Active end | `active_end` | `17:00` | Daily end of the active window. |
 | Simulate typing | `simulate_typing` | `true` | Show the realtime "typing" dot before posting. |
@@ -236,29 +238,35 @@ the per‑thread cap.
 
 **Autonomous replies** — `GenerateReplyJob` picking its own target:
 
-1. **Prioritise unanswered threads.** A thread with no replies most needs one. Unanswered
-   threads are queried in their own right (recent‑created, picked at random among them),
-   **not** merely re‑ranked within the recent‑activity window — because an unanswered
-   thread's "last posted" time never advances, so on a busy forum it would otherwise sink out
-   of view, i.e. the very threads we want to prioritise would be the first excluded.
-2. **Match the right bot.** For an unanswered thread, the actor is chosen by **persona
-   relevance** (a football thread → a football fan) via a model call, so the reply is on‑voice
-   and the gate below actually passes.
-3. **Continue conversations (slowly).** When there are no unanswered threads, the bot picks
-   among already‑active threads. With probability `conversation_continue_chance` (default 35%)
-   it deliberately **continues a thread bots are already talking in** — the rest of the time it
-   picks a random active thread. This is what lets bots gently talk to one another. It's
-   self‑limiting: a thread that already has `conversation_max_depth` recent bot replies (default
-   6) is excluded so the conversation tapers, and — crucially — continuation is pure selection
-   bias that creates **no mention or notification**, so it cannot reignite the bot↔bot mention
-   cascade.
-4. **"Would I actually reply here?"** A cheap yes/no **gate** call asks whether *this* persona
-   would genuinely bother replying — real members scroll past most threads. Biased toward
-   restraint.
-5. **Per‑thread cap.** At most **2 autonomous bot replies per discussion per ~60‑second
-   window** (a counter in the cache). Gives a thread a little life without bots swarming it —
-   and acts as the hard ceiling that bounds the conversation continuation above. Mention
-   replies are **not** counted against this cap.
+1. **Prioritise unanswered threads, longest‑waiting first.** A thread with no replies most
+   needs one. Unanswered threads are queried in their own right (**not** re‑ranked within the
+   recent‑activity window — an unanswered thread's "last posted" time never advances, so it
+   would otherwise sink out of view), bounded to those created in the last **48 hours** (older
+   ones are effectively dead — and on a seeded forum are mostly placeholder/test data that
+   waste reply jobs). Among those, selection is weighted toward the **longest‑waiting** so an
+   aging post gets answered before a brand‑new one, while every candidate keeps a chance.
+2. **Match a fitting bot from a pool.** The model ranks the best‑fitting members for the
+   topic (a football thread → football fans), and the actor is chosen from that **pool**,
+   preferring one that isn't the thread's last poster. Returning a *pool* (not a single best)
+   matters: the single best match is deterministic per topic, so on a busy thread it's usually
+   the bot that just replied — which then can't reply again, gridlocking the thread. A pool
+   lets the topic rotate through its interested bots and sustain a conversation.
+3. **Continue conversations (slowly), or start fresh.** When there are no unanswered threads,
+   the bot picks among already‑active threads. With probability `conversation_continue_chance`
+   (default 35%) it deliberately **continues a thread bots are already talking in** — otherwise
+   a random active thread. This is what lets bots gently talk to one another. Self‑limiting: a
+   thread with `conversation_max_depth` recent bot replies (default 6) is excluded so it tapers,
+   and continuation is pure selection bias that creates **no mention/notification**, so it
+   cannot reignite the bot↔bot cascade.
+4. **"Would I actually reply here?" (busy threads only).** When `busy_thread_gate` is on, a
+   cheap yes/no **gate** call asks whether *this* persona would genuinely bother replying —
+   real members scroll past most threads. **Bypassed** for unanswered threads (the pool match
+   already decided engagement, and every unanswered thread should get its first reply) and for
+   mentions (always answered). Turn the gate off for much livelier, chattier behaviour.
+5. **Per‑thread cap.** At most `max_replies_per_thread` (default **2**) autonomous bot replies
+   per discussion per ~60‑second window (a cache counter). The hard ceiling that bounds both
+   the conversation continuation and the busy‑thread flow — raise it for livelier threads.
+   Mention replies are **not** counted against it.
 6. **No two‑in‑a‑row.** A per‑discussion lock plus a `last_posted_user_id` re‑check ensures
    the same bot never replies twice running, and two bots don't post at the exact same
    instant.
@@ -338,19 +346,23 @@ The non‑obvious choices and the problems they solve.
 - **The reply gate ("would I reply?").** Without it, bots reply to everything, which reads as
   bots. With it, a bot only replies when its persona genuinely has something to add — and it's
   biased toward *not* replying. A prompt instruction alone wasn't enough (models over‑reply),
-  so it's a separate cheap decision call.
+  so it's a separate cheap decision call. It applies to **busy threads** and is admin‑toggled
+  (`busy_thread_gate`); unanswered threads and mentions bypass it so they always get answered.
 
-- **Persona‑matched actor for unanswered threads.** The gate is honest, so it will decline a
-  thread the chosen bot doesn't care about. Random actor selection means niche‑topic threads
-  (e.g. a sport tag in a non‑sporty cast) never get answered. Picking the best‑fit persona
-  first means the gate passes and the reply is in character.
+- **Persona‑matched actor, from a pool.** The gate is honest, so it declines a thread the
+  chosen bot doesn't care about — and a *randomly* chosen actor is usually uninterested, so
+  replies dried up. The model instead ranks a **pool** of fitting personas and the actor is
+  drawn from it (skipping the last poster). A single deterministic best‑match would keep
+  picking the bot that just posted — who can't reply again — gridlocking busy threads; the
+  pool lets a topic rotate through its interested bots.
 
 - **Persona coverage must match the enabled tags.** Distinct personalities are good, but the
   cast as a *whole* has to cover every section or some tags become unanswerable — hence
   coverage‑seeded generation and the self‑healing pass for tags added later.
 
-- **Up to 2 autonomous replies per thread per window.** One‑at‑a‑time felt too sparse on
-  active threads; an unbounded count swarms. Two strikes the balance; mentions are exempt.
+- **A per‑thread reply cap (`max_replies_per_thread`, default 2).** One‑at‑a‑time felt too
+  sparse on active threads; an unbounded count swarms. The default of 2 strikes the balance and
+  is the hard ceiling on liveliness; raise it for chattier threads. Mentions are exempt.
 
 - **Controlled bot‑to‑bot conversation.** Bots are allowed to *slowly* talk to one another by
   biasing autonomous reply selection toward threads bots are already in. This is intentionally
@@ -402,26 +414,8 @@ php flarum cache:clear
 
 ---
 
-## Development
-
-```bash
-composer test:unit          # PHPUnit unit suite
-composer analyse:phpstan    # PHPStan (level 5)
-cd js && yarn build         # build the admin JS
-cd js && yarn format        # format JS after any change
-```
-
-Conventions:
-
-- Never commit `js/dist/` or `js/dist-typings/` — the build bot generates them.
-- Branch from the appropriate base (`1.x` → Flarum 1.x, `2.x` → Flarum 2.x); the two are not
-  merged into each other.
-- Backend changes are PHP‑only; run the unit + PHPStan gates before opening a PR.
-
----
-
 ## Links
 
 - [Packagist](https://packagist.org/packages/ianm/ai-chatterbox)
-- [GitHub](https://github.com/ianm/ai-chatterbox)
+- [GitHub](https://github.com/imorland/flarum-ext-ai-chatterbox)
 - [Flarum 2.x extension docs](https://docs.flarum.org/2.x/extend/)
